@@ -2,6 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import ejs from "ejs";
 import mongoose from "mongoose";
+import mongooseEncryption from "mongoose-encryption";
 
 const app = express();
 
@@ -11,7 +12,7 @@ app.set("view engine", "ejs");
 
 mongoose.connect("mongodb://localhost:27017/userDB");
 
-const userSchema = {
+const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
@@ -20,7 +21,13 @@ const userSchema = {
     type: String,
     required: true,
   },
-};
+});
+
+const secret = "This is a secret";
+userSchema.plugin(mongooseEncryption, {
+  secret: secret,
+  encryptedFields: ["password"],
+});
 
 const User = mongoose.model("User", userSchema);
 
@@ -68,7 +75,7 @@ app.post("/login", async (req, res) => {
     } else {
       console.log("fail to login.");
     }
-    }
+  }
 });
 
 app.listen(3000, () => {
